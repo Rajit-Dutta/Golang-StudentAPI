@@ -1,7 +1,13 @@
 package types
 
 type Student struct {
-	Name  string
-	Age   int
-	Email string
+	ID    int
+	Name  string `validate:"required"`
+	Age   int    `validate:"required"`
+	Email string `validate:"required"`
+}
+
+type Response struct {
+	Status string `json:"status"`
+	Error  string `json:"error"`
 }
