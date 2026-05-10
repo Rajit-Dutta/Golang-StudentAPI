@@ -98,3 +98,43 @@ func DeleteByID(storage storage.Storage) http.HandlerFunc {
 		responses.WriteJSON(w, http.StatusOK, student)
 	}
 }
+
+func EditByID(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		slog.Info("editing a student", slog.String("id:", id))
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			responses.WriteJSON(w, http.StatusBadRequest, responses.GeneralError(err))
+			return
+		}
+
+		var student types.Student
+		err = json.NewDecoder(r.Body).Decode(&student)
+		if errors.Is(err, io.EOF) {
+			responses.WriteJSON(w, http.StatusBadRequest, responses.GeneralError(err))
+			return
+		}
+
+		if err := validator.New().Struct(student); err != nil {
+			validatorErrors := err.(validator.ValidationErrors)
+			responses.WriteJSON(w, http.StatusBadRequest, responses.ValidatorError(validatorErrors))
+			return
+		}
+
+		_, err = storage.EditStudentByID(
+			intId,
+			student.Name,
+			student.Age,
+			student.Email,
+		)
+		slog.Info("Last ID: ", slog.String("userId:", fmt.Sprint(intId)))
+		if err != nil {
+			responses.WriteJSON(w, http.StatusInternalServerError, responses.GeneralError(err))
+			return
+		}
+		slog.Info("Editted a student entry", slog.String("userId:", fmt.Sprint(intId)))
+
+		responses.WriteJSON(w, http.StatusCreated, map[string]int64{"id": intId})
+	}
+}

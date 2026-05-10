@@ -32,6 +32,7 @@ func main() {
 	router.HandleFunc("GET /api/students/{id}", students.GetByID(storage))
 	router.HandleFunc("GET /api/students", students.GetStudentsList(storage))
 	router.HandleFunc("DELETE /api/students/{id}", students.DeleteByID(storage))
+	router.HandleFunc("PUT /api/students/{id}", students.EditByID(storage))
 
 	server := http.Server{
 		Addr:    cfg.Addr,
