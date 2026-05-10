@@ -12,14 +12,23 @@ import (
 	"time"
 
 	"github.com/Rajit-Dutta/StudentAPI/internal/config"
-	"github.com/Rajit-Dutta/StudentAPI/internal/handler/students"
+	"github.com/Rajit-Dutta/StudentAPI/internal/http/handler/students"
+	"github.com/Rajit-Dutta/StudentAPI/internal/storage/sqlite"
 )
 
 func main() {
 	cfg := config.MustLoad()
+
+	storage, err := sqlite.New(cfg)
+
+	if err != nil {
+		log.Fatal("Error connecting DB")
+	}
+	slog.Info("storage initialised", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
+
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /", students.New())
+	router.HandleFunc("POST /", students.New(storage))
 
 	server := http.Server{
 		Addr:    cfg.Addr,
